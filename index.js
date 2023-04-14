@@ -1,5 +1,5 @@
 const express = require("express");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 require("dotenv").config();
 
@@ -22,11 +22,11 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
-client.connect((err) => {
-  const collection = client.db("test").collection("devices");
-  // perform actions on the collection object
-  client.close();
-});
+// client.connect((err) => {
+//   const collection = client.db("test").collection("devices");
+//   // perform actions on the collection object
+//   client.close();
+// });
 
 async function run() {
   const productsCollection = client
@@ -36,10 +36,16 @@ async function run() {
   try {
     app.get("/products", async (req, res) => {
       const query = {};
-      const cursor = productsCollection.find(query);
-      const allProducts = await cursor.toArray();
+      const allProducts = await productsCollection.find(query).toArray();
       res.send(allProducts);
       console.log(allProducts);
+    });
+
+    app.get("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const productDetails = await productsCollection.findOne(query);
+      res.send(productDetails);
     });
   } finally {
   }
