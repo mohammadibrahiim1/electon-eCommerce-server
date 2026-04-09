@@ -1,62 +1,29 @@
-const express = require("express");
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+// server.js
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import connectDB from "./config/db.js";
+import productRoutes from "./routes/productRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+
+dotenv.config();
+connectDB();
+
 const app = express();
-require("dotenv").config();
 
-const cors = require("cors");
-const port = process.env.PORT || 5000;
-
-// midaleware
-
+// Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json()); 
 
-// user-admin
-// QvuYfoPkal4fSmbm
+// Routes
+app.use("/api/v1/products", productRoutes);
+app.use("/api/v1/auth", authRoutes);
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.wuwpwwx.mongodb.net/?retryWrites=true&w=majority`;
-console.log(uri);
-const client = new MongoClient(uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  serverApi: ServerApiVersion.v1,
-});
-
-// client.connect((err) => {
-//   const collection = client.db("test").collection("devices");
-//   // perform actions on the collection object
-//   client.close();
-// });
-
-async function run() {
-  const productsCollection = client
-    .db("electon-eCommerce")
-    .collection("products");
-
-  try {
-    app.get("/products", async (req, res) => {
-      const query = {};
-      const allProducts = await productsCollection.find(query).toArray();
-      res.send(allProducts);
-      console.log(allProducts);
-    });
-
-    app.get("/products/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const productDetails = await productsCollection.findOne(query);
-      res.send(productDetails);
-    });
-  } finally {
-  }
-}
-
-run().catch((error) => console.log(error));
-
+// Root route
 app.get("/", (req, res) => {
-  res.send(" welcome to electon-eCommerce server ");
+  res.send("API is running...");
 });
 
-app.listen(port, () => {
-  console.log(`server is running on port ${port}`);
-});
+// Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
